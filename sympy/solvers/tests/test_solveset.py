@@ -1525,3 +1525,8 @@ def test_issue_11534():
     soln = Complement(FiniteSet(-y/sqrt(y**2 + 1), y/sqrt(y**2 + 1)), FiniteSet(-1, 1))
     assert solveset(eq, x, S.Reals) == soln
     assert solveset(eq2, x, S.Reals) == soln
+
+
+def test_issue_12258():
+    M, N = symbols('M N',commutative=False)
+    assert solveset(M*x+N*y,x) == {-M**(-1)*N*y}
