@@ -58,6 +58,7 @@ class FpGroup(DefaultPrinting):
             return fr_grp
         obj = object.__new__(cls)
         obj.free_group = fr_grp
+        obj.identity = fr_grp.identity
         obj.relators = relators
         obj.generators = obj._generators()
         obj.dtype = type("FpGroupElement", (FpGroupElement,), {"group": obj})
@@ -70,6 +71,7 @@ class FpGroup(DefaultPrinting):
 
         obj._order = None
         obj._center = None
+        obj._random_list = None
         return obj
 
     def _generators(self):
@@ -188,7 +190,6 @@ class FpGroup(DefaultPrinting):
         else:
             return None
 
-
     def _finite_index_subgroup(self, s=[]):
         '''
         Find the elements of `self` that generate a finite index subgroup
@@ -236,13 +237,55 @@ class FpGroup(DefaultPrinting):
         freqs = [sum([r.generator_count(g) for r in rels]) for g in gens]
         return gens[freqs.index(max(freqs))]
 
-    def random_element(self):
-        import random
-        r = self.free_group.identity
-        for i in range(random.randint(2,3)):
-            r = r*random.choice(self.generators)**random.choice([1,-1])
+    def random_elements(self, n):
+        '''
+        Return `n` pseudo-random elements of the group.
+
+        '''
+        r = []
+        for i in range(n):
+            r.append(self.random_element())
         return r
 
+    def random_element(self):
+        '''
+        Return a pseudo-random element of the group. This is based on the
+        `PrRandom` function from Section 3.2.2 of "The Handbook of
+        Computational Group Theory" by D.Holt, B.Eick and E.O'Brien.
+
+        '''
+        import random
+        if self._random_list is None:
+            self._random_initialise()
+        X = self._random_list
+        l = len(X)
+        s = random.choice(range(l))
+        t = random.choice([r for r in range(l) if r != s])
+        e = random.choice([1,-1])
+        if random.choice([1,2]) == 1:
+            X[s] = X[s]*X[t]**e
+            X[0] = X[0]*X[s]
+        else:
+            X[s] = X[t]**e*X[s]
+            X[0] = X[s]*X[0]
+        self._random_list = X
+        return X[0]
+
+    def _random_initialise(self):
+        '''
+        Initialise the list for generating random elements
+
+        '''
+        X = [self.identity]
+        X.extend(self.generators)
+        while len(X) < 12:
+            n = min(12-len(X),len(X))
+            X.extend(self.generators[:n])
+        self._random_list = X
+        _ = self.random_elements(50)
+        return
+            
+        
     def index(self, H, strategy="relator_based"):
         """
         Return the index of subgroup ``H`` in group ``self``.

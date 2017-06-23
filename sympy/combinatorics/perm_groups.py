@@ -154,6 +154,7 @@ class PermutationGroup(Basic):
         obj._max_div = None
         obj._r = len(obj._generators)
         obj._degree = obj._generators[0].size
+        obj.identity = Permutation(list(range(obj.degree)))
 
         # these attributes are assigned after running schreier_sims
         obj._base = []

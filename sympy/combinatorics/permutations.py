@@ -976,6 +976,12 @@ class Permutation(Basic):
         # return a tuple, instead
         return tuple(self.array_form)
 
+    def is_identity(self):
+        '''
+        Return True if the permutaiton is the identity
+        '''
+        return self == Permutation(self.size)
+
     @property
     def array_form(self):
         """
